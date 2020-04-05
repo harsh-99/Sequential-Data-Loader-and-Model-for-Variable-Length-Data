@@ -104,3 +104,49 @@ def dataloader(word2id, train_path, test_path, batch_size = 100):
 	test_dataloader = torch.utils.data.DataLoader(dataset=test_dataset, batch_size=batch_size, shuffle=False, collate_fn=collate_fn)
 
 	return train_dataloader, test_dataloader
+
+class RNN(nn.Module):
+	def __init__(self,word2id, input_dim, embedding_dim, hidden_dim, output_dim):
+		super().__init__()
+		self.word2id = word2id
+		self.embedding = nn.Embedding(input_dim, embedding_dim, padding_idx = self.word2id['<pad>'])
+		self.rnn = nn.RNN(embedding_dim, hidden_dim)
+		self.fc = nn.Linear(hidden_dim, output_dim)
+		
+	def forward(self, text, length):
+		text = text.permute(1,0)
+		#text = [sent len, batch size]
+		embedded = self.embedding(text)
+		#embedded = [sent len, batch size, emb dim]
+		print(embedded.shape)
+		embedded = torch.nn.utils.rnn.pack_padded_sequence(embedded, length)
+
+		packed_output, hidden = self.rnn(embedded)
+		output, output_lengths = torch.nn.utils.rnn.pad_packed_sequence(packed_output)
+		print(output.shape)
+		#output=[sent len, batch size, hid dim]
+		#output over padding token will be zero
+		
+		#hidden = [1, batch size, hid dim]
+		#the last output and hidden should be the same, to check that uncomment below code
+		
+		# # convert length to index
+		# l = [lengths-1 for lengths in length]
+		# for i, length in enumerate(l):
+		# 	assert torch.equal(output[length,i,:], hidden.squeeze(0)[i])
+		
+		return self.fc(hidden.squeeze(0))
+
+# train_data, label = reader(train_path)
+word2id = build_vocab(train_path)
+with open('./word2id.json', 'r') as f:
+	word2id = json.load(f)
+# print(len(word2id))
+train, test = dataloader(word2id, train_path, test_path)
+model = RNN(word2id, len(word2id), 100, 256, 1)
+# print(len(train))
+# print(train)
+for pad_seq, length, label in train:
+	print(pad_seq.shape, len(pad_seq), len(length), max(length))
+	output = model(pad_seq, length)
+	exit()
