@@ -60,3 +60,47 @@ def build_vocab(path, min_word_count = 5):
 		json.dump(word2id, f)
 	return word2id
 
+class Dataset(d.Dataset):
+	def __init__(self, word2id, train_path):
+		self.word2id = word2id
+		self.train_path = train_path
+		self.data, self.label = reader(train_path)
+
+	def __getitem__(self, index):
+		seq = self.preprocess(self.data[index])
+		label = torch.Tensor(self.label[index])
+		return seq, label
+
+	def __len__(self):
+		return(len(self.data))
+
+	def preprocess(self, text):
+		line = gensim.utils.simple_preprocess(text)
+		seq = []
+		for word in line:
+			if word in self.word2id:
+				seq.append(self.word2id[word])
+			else:
+				seq.append(self.word2id['<unk>'])
+		seq = torch.Tensor(seq)
+		return seq
+
+def collate_fn(data):
+	data.sort(key=lambda x: len(x[0]), reverse=True)
+	sequences, label = zip(*data)
+	length = [len(seq) for seq in sequences]
+	padded_seq = torch.zeros(len(sequences), max(length)).long()
+	for i, seq in enumerate(sequences):
+		end = length[i]
+		padded_seq[i,:end] = seq
+	return padded_seq, length, label
+
+
+
+def dataloader(word2id, train_path, test_path, batch_size = 100):
+	train_dataset = Dataset(word2id, train_path)
+	test_dataset = Dataset(word2id, test_path)
+	train_dataloader = torch.utils.data.DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=True,collate_fn=collate_fn)
+	test_dataloader = torch.utils.data.DataLoader(dataset=test_dataset, batch_size=batch_size, shuffle=False, collate_fn=collate_fn)
+
+	return train_dataloader, test_dataloader
