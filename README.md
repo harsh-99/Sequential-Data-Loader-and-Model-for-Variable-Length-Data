@@ -23,6 +23,6 @@ $ python train.py
 ```
 * To just check the dataloader -:
 ```
-$ python check_loader.py
+$ python check_loader.ipynb
 ```
 
