@@ -20,8 +20,8 @@ $ python build_vocab.py
 ```
 $ python train.py
 ```
-* To just check the dataloader -:
+* To just see the dataloader functioning -:
 ```
-$ python check_loader.ipynb
+Use check_loader.ipynb
 ```
 
