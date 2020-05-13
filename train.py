@@ -76,8 +76,8 @@ def train(train_data, model, optimizer, criterion):
 		optimizer.step()
 
 		acc = accuracy(output, label)
-		avg_loss += loss
-		avg_acc += acc
+		avg_loss += loss.item()
+		avg_acc += acc.item()
 		
 	return (1.0 * avg_loss)/len(train_data), (1.0*avg_acc)/len(train_data) 
 
@@ -98,8 +98,8 @@ def evaluate(test_data, model, criterion):
 		loss = criterion(output, label)
 
 		acc = accuracy(output, label)
-		avg_loss += loss
-		avg_acc += acc
+		avg_loss += loss.item()
+		avg_acc += acc.item()
 		
 	return (1.0 * avg_loss)/len(test_data), (1.0*avg_acc)/len(test_data) 
 
@@ -127,5 +127,3 @@ if __name__ == '__main__':
 		eval_loss, eval_acc = evaluate(test_data, model, criterion)
 		print("Training loss: {}, Evaluation loss: {}, Training accuracy: {}, Evlaution accuracy: {}".
 			format(train_loss, eval_loss, train_acc, eval_acc))
-
-
