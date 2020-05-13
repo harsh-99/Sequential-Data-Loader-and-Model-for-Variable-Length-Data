@@ -79,7 +79,7 @@ def collate_fn(data):
 
 
 #generates the dataloader. 
-def dataloader(word2id, train_path, test_path, batch_size = 100):
+def dataloader(word2id, train_path, test_path, batch_size = 200):
 	train_dataset = Dataset(word2id, train_path)
 	test_dataset = Dataset(word2id, test_path)
 	train_dataloader = D.DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=True,collate_fn=collate_fn)
